@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3 http://maven.apache.org/xsd/assembly-1.1.3.xsd">
+    <!-- 一般会在产物后加上id，pom文件中appendAssemblyId配置false就可以不加 -->
+    <id>1.0.0</id>
+    <formats>
+        <format>jar</format>
+    </formats>
+
+    <!-- 指定打的包是否包含打包层目录，比如finalName是terminal-dispatch，当值为true，
+         所有文件被放在包内的terminal-dispatch目录下，否则直接放在包的根目录下，
+    -->
+    <includeBaseDirectory>true</includeBaseDirectory>
+
+    <!-- 指定要包含的文件集，可以定义多个fileSet -->
+    <fileSets>
+        <fileSet>
+            <directory>src/main/resources</directory>
+            <outputDirectory>./config</outputDirectory>
+            <includes>
+                <!-- 精确控制要包含的文件，<exclude>用于精确控制要排除的文件  -->
+                <include>application.properties</include>
+                <include>log4j2.xml</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>./scripts</directory>
+            <outputDirectory>./scripts</outputDirectory>
+            <includes>
+                <include>*.sh</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>${project.build.directory}</directory>
+            <outputDirectory>./</outputDirectory>
+            <includes>
+                <include>*.jar</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+
+    <!-- 指定将工程依赖的包打到包里的指定目录下 -->
+    <dependencySets>
+        <dependencySet>
+            <!-- 指定打包时是否包含工程自身生成的jar包 -->
+            <useProjectArtifact>true</useProjectArtifact>
+            <!-- 指定将这些依赖包打到包里lib目录下 -->
+            <outputDirectory>lib</outputDirectory>
+            <!-- 用于管理依赖的部署，runtime表示只在运行时使用 -->
+            <scope>runtime</scope>
+            <!-- lib中不包含项目生成的jar包 -->
+            <excludes>
+                <exclude>${groupId}:${artifactId}</exclude>
+            </excludes>
+        </dependencySet>
+    </dependencySets>
+</assembly>

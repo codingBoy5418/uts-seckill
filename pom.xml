@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.uts</groupId>
+    <artifactId>uts-seckill</artifactId>
+    <version>1.0.0</version>
+    <name>uts-seckill</name>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.3.4.RELEASE</version>
+        <relativePath/>
+    </parent>
+
+<dependencies>
+    <!-- spring-boot-web -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+        <!-- remove logback from spring boot -->
+        <exclusions>
+            <exclusion>
+                <artifactId>spring-boot-starter-logging</artifactId>
+                <groupId>org.springframework.boot</groupId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+
+    <!-- spring-boot-starter -->
+    <dependency>
+        <groupId>org.mybatis.spring.boot</groupId>
+        <artifactId>mybatis-spring-boot-starter</artifactId>
+        <version>2.1.0</version>
+    </dependency>
+
+    <!-- spring-boot-validate -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+    <!-- gateway网关 -->
+<!--    <dependency>-->
+<!--        <groupId>org.springframework.cloud</groupId>-->
+<!--        <artifactId>spring-cloud-starter-gateway</artifactId>-->
+<!--        <version>2.2.4.RELEASE</version>-->
+<!--    </dependency>-->
+
+    <!-- log4j2 -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-log4j2</artifactId>
+    </dependency>
+
+    <!-- lombok -->
+    <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <optional>true</optional>
+    </dependency>
+
+    <!-- fastjson -->
+    <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>fastjson</artifactId>
+        <version>1.2.78</version>
+    </dependency>
+
+    <!-- Mysql -->
+    <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+    </dependency>
+
+    <!-- Redis -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+
+</dependencies>
+
+    <build>
+        <!-- 指定项目的jar包名称 -->
+        <finalName>uts-seckill</finalName>
+
+        <!-- 自定义打包配置 -->
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.3.0</version>
+
+                <configuration>
+                    <!-- 指定项目的打包脚本 -->
+                    <descriptors>
+                        <descriptor>src/main/resources/package.xml</descriptor>
+                    </descriptors>
+                    <!-- 指定项目的产物格式 -->
+                    <formats>
+                        <format>tar.gz</format>
+                    </formats>
+                    <!-- 产物tar.gz名称中，不包含package.xml中配置的ID -->
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <!-- 在这里设置自定义的产物tar.gz文件名称 -->
+                    <finalName>uts-seckill</finalName>
+                </configuration>
+
+                <!--
+                通过配置<executions>，你告诉Maven在特定的生命周期阶段执行特定的插件目标，
+                从而生成你想要的包格式。在这个例子中，配置确保了当你运行mvn package命令时，
+                maven-assembly-plugin会在package阶段执行single目标，从而生成一个自定义的tar.gz包。
+                -->
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <!--绑定到MAVEN的操作类型上-->
+                        <phase>package</phase>
+                        <!--仅仅运行一次-->
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+            </plugin>
+
+            <!-- maven-jar-plugin 插件是负责生成 JAR 文件的 Maven 插件，下面配置会在MANIFEST文件中生成
+                 Main-Class和Class-Path配置，后者为项目中依赖的各个jar包 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <!-- 使用适合你的Maven版本的插件版本 -->
+                <version>3.2.0</version>
+                <configuration>
+                    <classesDirectory>${project.build.directory}/classes</classesDirectory>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <!-- 由于将jar包放在lib文件夹，导致访问不到jar,报错ClassNotFoundException;
+                                 因此，MANIFEST文件的Class-Path要加前缀，如 Class-Path:lib/aaa.jar
+                            -->
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <useUniqueVersions>false</useUniqueVersions>
+                            <!-- 指定项目的主类 -->
+                            <mainClass>com.lj.StartApplication</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+
+    </build>
+
+</project>
