@@ -1,7 +1,7 @@
 package org.uts.exception;
 
 
-import org.uts.global.errorCode.ErrorCode;
+import org.uts.global.ErrorCode;
 
 /**
  * @Author 86180

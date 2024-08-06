@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.uts.global.errorCode.ErrorCode;
+import org.uts.global.ErrorCode;
 import org.uts.result.RestResult;
 
 import javax.validation.ConstraintViolationException;

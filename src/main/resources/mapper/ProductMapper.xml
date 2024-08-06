@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.uts.business.mapper.SecKillProductMapper">
+
+    <!--  查询秒杀商品信息 - 分页  -->
+    <select id="selectProduct" resultType="org.uts.business.domain.dto.ProductDto">
+        SELECT
+        `ID`,
+        `SECKILL_ID`,
+        `GOODS_ID`,
+        `SECKILL_NAME`,
+        `PRICE`,
+        `SECKILL_PRICE`,
+        `TIME`,
+        `START_TIME`,
+        `END_TIME`,
+        `STOCK`,
+        `STATUS`,
+        `IMAGE_URL`,
+        `DESC`,
+        `CREATE_TIME`,
+        `UPDATE_TIME`
+        FROM
+        product
+        WHERE
+        1 = 1
+        <if test="id!=null">
+            AND `ID`=#{id}
+        </if>
+        <if test="seckillId!=null">
+            AND `SECKILL_ID`=#{seckillId}
+        </if>
+        <if test="seckillName!=null and seckillName!=''">
+            AND `SECKILL_NAME` LIKE CONCAT('%', #{seckillName} ,'%')
+        </if>
+        ORDER BY UPDATE_TIME DESC
+    </select>
+
+    <!--  查询秒杀商品信息 - 详情  -->
+    <select id="selectById" resultType="org.uts.business.domain.dto.ProductDto">
+        SELECT
+        `ID`,
+        `SECKILL_ID`,
+        `GOODS_ID`,
+        `SECKILL_NAME`,
+        `PRICE`,
+        `SECKILL_PRICE`,
+        `TIME`,
+        `START_TIME`,
+        `END_TIME`,
+        `STOCK`,
+        `STATUS`,
+        `IMAGE_URL`,
+        `DESC`,
+        `CREATE_TIME`,
+        `UPDATE_TIME`
+        FROM
+        product
+        WHERE `SECKILL_ID`=#{seckillId}
+    </select>
+
+
+
+    <!--  查询秒杀商品信息 - 详情  -->
+    <select id="selectCurDayProduct" resultType="org.uts.business.domain.dto.ProductDto">
+        SELECT
+        *
+        FROM
+        product
+        WHERE
+        start_time BETWEEN curdate()
+        AND date_add(curdate(), INTERVAL 1 DAY)
+    </select>
+
+
+
+
+
+
+
+</mapper>

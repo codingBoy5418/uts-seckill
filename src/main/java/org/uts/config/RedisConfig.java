@@ -18,13 +18,13 @@ import java.time.Duration;
 /**
  * Redis 配置类,主要配置缓存的序列化、过期时间
  * */
-//@Configuration
+@Configuration
 public class RedisConfig {
 
     //@Value("${cache.defaultExpiration}")
     private long defaultExpiration;
 
-    //@Bean
+    @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
 
