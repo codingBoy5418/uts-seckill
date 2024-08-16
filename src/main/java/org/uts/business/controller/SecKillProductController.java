@@ -1,5 +1,6 @@
 package org.uts.business.controller;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -8,7 +9,9 @@ import org.uts.business.domain.vo.BatchAddProductVo;
 import org.uts.business.domain.vo.SecKillProductPageVo;
 import org.uts.business.domain.vo.ProductVo;
 import org.uts.business.service.SecKillProductService;
+import org.uts.exception.BusinessException;
 import org.uts.result.RestResult;
+import org.uts.service.order.OrderService;
 import org.uts.valid.Add;
 
 import java.util.List;
@@ -25,6 +28,9 @@ public class SecKillProductController {
 
     @Autowired
     private SecKillProductService secKillProductService;
+
+    @Reference
+    private OrderService orderService;
 
     /*
      * 查询秒杀商品列表信息 - 分页
@@ -48,8 +54,8 @@ public class SecKillProductController {
      * 秒杀接口
      */
     @PostMapping("/secKill")
-    public RestResult secKill(@RequestBody @Validated(Add.class) ProductVo productVo){
-        Long id = secKillProductService.secKill(productVo);
+    public RestResult secKill(@RequestBody @Validated(Add.class) ProductVo productVo) throws BusinessException {
+        String id = secKillProductService.secKill(productVo);
         return RestResult.createSuccessfulRest(id);
     }
 

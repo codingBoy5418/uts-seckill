@@ -24,11 +24,13 @@ public interface SecKillProductMapper {
      */
     public ProductDto selectById(Long id);
 
-
-
-
     /*
       查询当天的秒杀商品信息
      */
     public List<ProductDto> selectCurDayProduct();
+
+    /*
+      更新商品库存
+     */
+    public Integer updateStock(Long secKillId, Integer count);
 }

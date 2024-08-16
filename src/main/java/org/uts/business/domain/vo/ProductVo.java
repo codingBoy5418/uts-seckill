@@ -64,6 +64,9 @@ public class ProductVo implements Serializable {
     //更新时间
     private Date updateTime;
 
+    //用户ID
+    private Long userId;
+
     /*
       将 商品VO 转换为 商品DTO
      */

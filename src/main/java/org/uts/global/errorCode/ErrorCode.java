@@ -1,4 +1,4 @@
-package org.uts.global;
+package org.uts.global.errorCode;
 
 /**
  * 错误码枚举类

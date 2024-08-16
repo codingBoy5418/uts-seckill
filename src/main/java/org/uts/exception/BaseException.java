@@ -1,7 +1,7 @@
 package org.uts.exception;
 
 import lombok.Data;
-import org.uts.global.ErrorCode;
+import org.uts.global.errorCode.ErrorCode;
 
 /**
  * @Author 86180

@@ -72,6 +72,17 @@
         AND date_add(curdate(), INTERVAL 1 DAY)
     </select>
 
+    <!--  更新商品库存  -->
+    <update id="updateStock">
+        UPDATE
+        product
+        SET
+        STOCK = STOCK - 1,
+        UPDATE_TIME=NOW()
+        WHERE SECKILL_ID = #{secKillId}
+        AND STOCK &gt; 0
+    </update>
+
 
 
 

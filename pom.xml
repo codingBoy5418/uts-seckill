@@ -115,6 +115,20 @@
         <version>2.3.1</version>
     </dependency>
 
+    <!-- Dubbo依赖 -->
+    <dependency>
+        <groupId>com.alibaba.boot</groupId>
+        <artifactId>dubbo-spring-boot-starter</artifactId>
+        <version>0.2.0</version>
+    </dependency>
+
+    <!-- 远程调用公共接口依赖 -->
+    <dependency>
+        <groupId>org.uts</groupId>
+        <artifactId>uts-interface</artifactId>
+        <version>1.0.0</version>
+    </dependency>
+
 
 </dependencies>
 

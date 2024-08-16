@@ -4,6 +4,7 @@ import org.uts.business.domain.dto.ProductDto;
 import org.uts.business.domain.vo.BatchAddProductVo;
 import org.uts.business.domain.vo.SecKillProductPageVo;
 import org.uts.business.domain.vo.ProductVo;
+import org.uts.exception.BusinessException;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public interface SecKillProductService {
     /*
      * 秒杀接口
      */
-    public Long secKill(ProductVo productVo);
+    public String secKill(ProductVo productVo) throws BusinessException;
 
     /*
      * 付款接口
