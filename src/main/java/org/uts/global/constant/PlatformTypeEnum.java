@@ -1,5 +1,7 @@
 package org.uts.global.constant;
 
+import java.util.Objects;
+
 /**
  * @Description 平台类型 枚举类
  * @Author codBoy
@@ -17,23 +19,23 @@ public enum PlatformTypeEnum {
     ;
 
 
-    //订单状态 - 数值
-    private Integer status ;
+    //平台 - 数值
+    private Integer id ;
 
-    //订单状态 - 中文
+    //平台 - 中文
     private String name;
 
-    PlatformTypeEnum(Integer status, String name) {
-        this.status = status;
+    PlatformTypeEnum(Integer id, String name) {
+        this.id = id;
         this.name = name;
     }
 
-    public Integer getStatus() {
-        return status;
+    public Integer getId() {
+        return id;
     }
 
-    public void setStatus(Integer status) {
-        this.status = status;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -42,5 +44,20 @@ public enum PlatformTypeEnum {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    /*
+      根据平台数值，返回对应的平台名称
+    */
+    public static String getPlatformName(Integer id){
+        String platformName = "未知";
+        for(PlatformTypeEnum platformTypeEnum : PlatformTypeEnum.values()) {
+            if(Objects.equals(platformTypeEnum.getId(), id)){
+                platformName = platformTypeEnum.getName();
+                break;
+            }
+        }
+
+        return platformName;
     }
 }

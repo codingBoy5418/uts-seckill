@@ -123,7 +123,7 @@ public class SecKillProductServiceImpl implements SecKillProductService {
 
         //生成订单信息，发送到订单服务
         String orderId = String.valueOf(new SnowflakeUtils(1, 1).nextId());
-        OrderVo orderVo = new OrderVo(null, orderId, productVo.getUserId(), productVo.getSeckillId(), OrderStatusEnum.WAIT_TO_PAY_STATUS.getStatus(), PlatformTypeEnum.WEB_CLIENT_TYPE.getStatus(), null, null);
+        OrderVo orderVo = new OrderVo(null, orderId, productVo.getUserId(), productVo.getSeckillId(), OrderStatusEnum.WAIT_TO_PAY_STATUS.getStatus(), null, PlatformTypeEnum.WEB_CLIENT_TYPE.getId(), null, null, null);
         int id = orderService.addOrder(orderVo);
 
         return orderId;

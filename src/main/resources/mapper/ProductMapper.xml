@@ -80,7 +80,7 @@
         STOCK = STOCK - 1,
         UPDATE_TIME=NOW()
         WHERE SECKILL_ID = #{secKillId}
-        AND STOCK &gt; 0
+        -- AND STOCK &gt; 0
     </update>
 
 

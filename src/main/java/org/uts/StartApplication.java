@@ -1,5 +1,6 @@
 package org.uts;
 
+import com.alibaba.dubbo.config.spring.context.annotation.EnableDubbo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -17,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
  **/
 @SpringBootApplication
 @EnableCaching
+@EnableDubbo
 @Slf4j
 public class StartApplication implements CommandLineRunner {
 

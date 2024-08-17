@@ -1,11 +1,12 @@
 package org.uts.business.controller;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.uts.business.domain.vo.OrderVo;
-import org.uts.business.service.OrderService;
+import org.uts.exception.BusinessException;
 import org.uts.result.RestResult;
+import org.uts.service.order.OrderService;
+import org.uts.vo.order.OrderVo;
 
 /**
  * @Description 订单接口类
@@ -17,15 +18,14 @@ import org.uts.result.RestResult;
 @RequestMapping("/order")
 public class OrderController {
 
-    @Autowired
+    @Reference
     private OrderService orderService;
 
     /*
-     * 查询订单信息接口
+     * 查询订单详情信息接口
      */
-    @GetMapping("/{id}")
-    public RestResult order(@PathVariable String id){
-        OrderVo orderVo = orderService.selectById(id);
-        return RestResult.createSuccessfulRest(orderVo);
+    @PostMapping("/detail")
+    public RestResult order(@RequestBody OrderVo orderVo) throws BusinessException {
+        return RestResult.createSuccessfulRest(orderService.selectOrder(orderVo));
     }
 }
