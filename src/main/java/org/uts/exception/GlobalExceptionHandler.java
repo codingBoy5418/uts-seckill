@@ -1,5 +1,6 @@
 package org.uts.exception;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
@@ -19,6 +20,10 @@ import javax.validation.ConstraintViolationException;
  * **/
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @Value("${system.code}")
+    private String systemCode;
+
     /**
      * 处理 form data方式调用接口校验失败抛出的异常 (对象参数)
      */
@@ -67,7 +72,8 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public RestResult error(BusinessException e) {
-        return RestResult.createFailedResult(e.getErrorCode(), e.getErrorMsg());
+        //业务异常，在错误码前添加上服务编码，用于区分是哪个子系统报错
+        return RestResult.createFailedResult(systemCode + e.getErrorCode(), e.getErrorMsg());
     }
 
     /**
