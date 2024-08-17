@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.uts.business.domain.dto.ProductDto;
 import org.uts.business.domain.vo.ProductVo;
-import org.uts.business.service.SecKillProductService;
+import org.uts.business.service.product.ProductService;
 import org.uts.utils.RedisUtils;
 
 import java.util.List;
@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.uts.global.constant.CacheConstant.*;
-import static org.uts.global.constant.BusinessConstant.*;
 
 /**
  * @Description 在每天的 00:00:00定时删除前一天的秒杀商品缓存信息，然后缓存当前的秒杀商品信息
@@ -30,7 +29,7 @@ public class CacheProductTask {
     private RedisUtils redisUtils;
 
     @Autowired
-    private SecKillProductService secKillProductService;
+    private ProductService productService;
 
     /**
     * 删除前一天的秒杀商品缓存信息，新增当天的秒杀商品信息
@@ -43,7 +42,7 @@ public class CacheProductTask {
 
         //新增当天的秒杀商品缓存信息
         log.info("Start to add today seckill product cache info, task name: cacheProductJob ...");
-        List<ProductDto> todayProductList = secKillProductService.selectCurDayProduct();
+        List<ProductDto> todayProductList = productService.selectCurDayProduct();
         Map<Integer, List<ProductDto>> productIdMap = todayProductList.stream().collect(Collectors.groupingBy(ProductDto :: getTime));
         for(Map.Entry<Integer, List<ProductDto>> entry : productIdMap.entrySet()){
             Integer time = entry.getKey();

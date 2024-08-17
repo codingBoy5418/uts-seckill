@@ -13,18 +13,7 @@ import java.util.List;
  * @Author codBoy
  * @Date 2024/7/14 18:58
  */
-public interface SecKillProductService {
-
-    /*
-     * 查询秒杀商品列表信息 - 分页
-     */
-    List<ProductVo> secKillProductPage(SecKillProductPageVo productPageVo);
-
-    /*
-     * 查询秒杀商品信息 - 详情
-     */
-    public ProductVo selectById(Long id);
-
+public interface SecKillService {
     /*
      * 秒杀接口
      */
@@ -41,9 +30,4 @@ public interface SecKillProductService {
     public String refund(String id);
 
 
-
-    /*
-      查询当天的秒杀商品信息
-     */
-    public List<ProductDto> selectCurDayProduct();
 }

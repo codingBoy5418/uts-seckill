@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.uts.business.mapper.SecKillProductMapper">
+<mapper namespace="org.uts.business.mapper.ProductMapper">
 
     <!--  查询秒杀商品信息 - 分页  -->
     <select id="selectProduct" resultType="org.uts.business.domain.dto.ProductDto">

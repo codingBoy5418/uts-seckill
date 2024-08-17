@@ -12,7 +12,7 @@ import java.util.List;
  * @Date 2024/7/14 20:03
  */
 @Mapper
-public interface SecKillProductMapper {
+public interface ProductMapper {
 
     /*
      * 查询秒杀商品列表信息 - 分页
@@ -22,7 +22,7 @@ public interface SecKillProductMapper {
     /*
      * 查询秒杀商品信息 - 详情
      */
-    public ProductDto selectById(Long id);
+    public ProductDto selectById(Long seckillId);
 
     /*
       查询当天的秒杀商品信息

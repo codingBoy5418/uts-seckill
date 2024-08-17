@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import org.uts.business.domain.vo.BatchAddProductVo;
 import org.uts.business.domain.vo.SecKillProductPageVo;
 import org.uts.business.domain.vo.ProductVo;
-import org.uts.business.service.SecKillProductService;
+import org.uts.business.service.SecKillService;
+import org.uts.business.service.product.ProductService;
 import org.uts.exception.BusinessException;
 import org.uts.result.RestResult;
 import org.uts.service.order.OrderService;
@@ -24,10 +25,13 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/product")
-public class SecKillProductController {
+public class SecKillController {
 
     @Autowired
-    private SecKillProductService secKillProductService;
+    private SecKillService secKillProductService;
+
+    @Autowired
+    private ProductService productService;
 
     @Reference
     private OrderService orderService;
@@ -37,7 +41,7 @@ public class SecKillProductController {
      */
     @PostMapping("/page")
     public RestResult secKillProductPage(@RequestBody SecKillProductPageVo productPageVo){
-        List<ProductVo> productVoList = secKillProductService.secKillProductPage(productPageVo);
+        List<ProductVo> productVoList = productService.secKillProductPage(productPageVo);
         return RestResult.createSuccessfulRest(productVoList);
     }
 
@@ -46,7 +50,7 @@ public class SecKillProductController {
      */
     @GetMapping("/{id}")
     public RestResult detail(@PathVariable Long id){
-        ProductVo productVo = secKillProductService.selectById(id);
+        ProductVo productVo = productService.selectById(id);
         return RestResult.createSuccessfulRest(productVo);
     }
 
