@@ -1,13 +1,15 @@
 package org.uts.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.cache.RedisCacheWriter;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.RedisSerializer;
@@ -55,6 +57,20 @@ public class RedisConfig {
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
         redisCacheConfiguration.serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()));
         return new RedisCacheManager(redisCacheWriter, redisCacheConfiguration);
+    }
+
+    /*
+      注入执行lua脚本的 RedisScript类
+     */
+    @Bean
+    public RedisScript<Boolean> redisScript(){
+        //返回值为Integer
+        DefaultRedisScript<Boolean> script = new DefaultRedisScript<>();
+        //设置返回值
+        script.setResultType(Boolean.class);
+        //设置LUA脚本路径
+        script.setLocation(new ClassPathResource("/lock/redis_lock_lua.lua"));
+        return script;
     }
 
 }

@@ -4,6 +4,8 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.uts.business.service.product.ProductService;
@@ -45,9 +47,15 @@ public class SecKillServiceImpl implements SecKillService {
     @Autowired
     private RedisLockUtils redisLockUtils;
 
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
     private static final Object SECKILL_LOCK = new Object();
 
     private SnowflakeUtils snowflakeUtils = new SnowflakeUtils(1, 1);
+
+    @Autowired
+    private RedisScript<Boolean> redisScript;
 
     /*
      * 秒杀接口
@@ -105,7 +113,8 @@ public class SecKillServiceImpl implements SecKillService {
             while(tryTime-- > 0) {
                 //加锁
                 log.info("Ready To Add Redis Lock, Thread ID: {}", threadId);
-                boolean success = redisLockUtils.tryLockRedis(lockKey, threadId);
+                //boolean success = redisLockUtils.tryLockRedis(lockKey, threadId);
+                Boolean success = redisTemplate.execute(redisScript, Collections.singletonList(lockKey), threadId, 10);
                 //加锁失败
                 if(!success) {
                     log.info("Add Redis Lock Failed, Thread ID: {}, Ready to Sleep and Retry ...", threadId);

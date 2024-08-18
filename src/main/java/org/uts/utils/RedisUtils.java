@@ -149,11 +149,11 @@ public class RedisUtils {
     }
 
     /**
-     * 设置值 - 若不存在  可用于Redis分布式锁
-     *
+     * 若不存在,设置值; 可用于Redis分布式锁
+     * 底层用的是:     SETNX命令,无对应的过期时间命令
      * @param key    键
-     * @param value 值
-     * @return 是否成功
+     * @param value  值
+     * @return       是否成功
      */
     public boolean setIfAbsent(String key, Object value) {
         try {
@@ -165,8 +165,8 @@ public class RedisUtils {
     }
 
     /**
-     * 设置值 - 若不存在  可用于Redis分布式锁
-     *
+     * 若不存在,设置值; 可用于Redis分布式锁
+     * 底层用的是:     SET命令
      * @param key    键
      * @param value  值
      * @param time   时间,单位为秒
@@ -715,5 +715,6 @@ public class RedisUtils {
             return 0;
         }
     }
+
 
 }
