@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import java.time.Duration;
 
 import java.util.List;
 import java.util.Map;
@@ -82,6 +83,20 @@ public class RedisUtils {
         }
     }
 
+    /**
+     * 删除缓存 - 单个
+     *
+     * @param key 只可以传一个值
+     */
+    public boolean del(String key) {
+        try {
+            return Boolean.TRUE.equals(redisTemplate.delete(key));
+        } catch (Exception e) {
+            log.error(key, e);
+            return false;
+        }
+    }
+
     // ============================ String =============================
     /**
      * 普通缓存获取
@@ -126,6 +141,40 @@ public class RedisUtils {
             } else {
                 set(key, value);
             }
+            return true;
+        } catch (Exception e) {
+            log.error(key, e);
+            return false;
+        }
+    }
+
+    /**
+     * 设置值 - 若不存在  可用于Redis分布式锁
+     *
+     * @param key    键
+     * @param value 值
+     * @return 是否成功
+     */
+    public boolean setIfAbsent(String key, Object value) {
+        try {
+            return Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(key, value));
+        } catch (Exception e) {
+            log.error(key, e);
+            return false;
+        }
+    }
+
+    /**
+     * 设置值 - 若不存在  可用于Redis分布式锁
+     *
+     * @param key    键
+     * @param value  值
+     * @param time   时间,单位为秒
+     * @return 是否成功
+     */
+    public boolean setIfAbsent(String key, Object value, long time) {
+        try {
+            redisTemplate.opsForValue().setIfAbsent(key, value, Duration.ofSeconds(time));
             return true;
         } catch (Exception e) {
             log.error(key, e);

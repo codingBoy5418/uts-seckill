@@ -15,11 +15,20 @@ public class CacheConstant {
     //模块名称
     public static final String MODULE_NAME = "PRODUCT";
 
+    //Redis锁
+    public static final String REDIS_LOCK = "REDIS_LOCK";
+
     //缓存前缀
     public static final String CACHE_PREFIX = APP_NAME + COLON + MODULE_NAME;
+
+    //分布式锁前缀
+    public static final String REDIS_LOCK_PREFIX = APP_NAME + COLON + REDIS_LOCK;
 
     //秒杀商品 KEY
     public static final String SECKILL_PRODUCT_KEY = "SECKILL_PRODUCT";
 
     public static final String SECKILL_PRODUCT_CACHE_KEY = CACHE_PREFIX + COLON + SECKILL_PRODUCT_KEY;
+
+    //秒杀商品id+场次Redis锁KEY
+    public static final String SECKILL_PRODUCT_TIME_CACHE_KEY = REDIS_LOCK_PREFIX + COLON + "SECKILL_PRODUCT_TIME_LOCK";
 }

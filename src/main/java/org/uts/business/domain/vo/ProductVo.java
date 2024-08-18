@@ -46,6 +46,9 @@ public class ProductVo implements Serializable {
     //秒杀结束时间
     private Date endTime;
 
+    //场次
+    private Integer time;
+
     //商品库存
     private Integer stock;
 
