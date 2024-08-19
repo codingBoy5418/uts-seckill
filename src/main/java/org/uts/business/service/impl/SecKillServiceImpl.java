@@ -8,6 +8,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.uts.business.service.product.ProductService;
 import org.uts.global.constant.BusinessConstant;
 import org.uts.global.constant.CacheConstant;
@@ -25,6 +26,9 @@ import org.uts.utils.SnowflakeUtils;
 import org.uts.vo.order.OrderVo;
 
 import java.util.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Description 秒杀商品 服务实现类
@@ -56,6 +60,9 @@ public class SecKillServiceImpl implements SecKillService {
 
     @Autowired
     private RedisScript<Boolean> redisScript;
+
+    @Autowired
+    private ScheduledExecutorService scheduledExecutorService;
 
     /*
      * 秒杀接口
@@ -108,13 +115,18 @@ public class SecKillServiceImpl implements SecKillService {
         //存在问题：一直未获取到锁的线程，也执行释放锁的操作，会把真正加锁的线程的锁给释放掉，导致超卖问题,这里加入ThreadId，实现线程只释放自己的锁
         String threadId = String.valueOf(snowflakeUtils.nextId());
 
+        //过期时间
+        int timeout = 2;
+        //任务线程池
+        ScheduledFuture<?> future = null;
+
         try {
             int tryTime = 10;
             while(tryTime-- > 0) {
                 //加锁
                 log.info("Ready To Add Redis Lock, Thread ID: {}", threadId);
                 //boolean success = redisLockUtils.tryLockRedis(lockKey, threadId);
-                Boolean success = redisTemplate.execute(redisScript, Collections.singletonList(lockKey), threadId, 10);
+                Boolean success = redisTemplate.execute(redisScript, Collections.singletonList(lockKey), threadId, timeout);
                 //加锁失败
                 if(!success) {
                     log.info("Add Redis Lock Failed, Thread ID: {}, Ready to Sleep and Retry ...", threadId);
@@ -129,6 +141,23 @@ public class SecKillServiceImpl implements SecKillService {
             if(tryTime <= 0) {
                 throw new BusinessException(BusinessErrorCode.REDIS_TRY_LOCK_OVER_COUNT);
             }
+
+            //执行业务前开启看门狗，实现自动续期
+            future = scheduledExecutorService.scheduleAtFixedRate(
+                    () -> {
+                        //查询分布式缓存的key是否存在，若存在，在续期；否则，不续期
+                        String cacheThreadId = (String) redisUtils.get(lockKey);
+                        if(!StringUtils.isEmpty(cacheThreadId) && cacheThreadId.equals(threadId)){
+                            log.info("Watch Dog Execute Add Time Operation,Thread ID: {}", threadId);
+                            redisUtils.expire(lockKey, timeout + 2, TimeUnit.SECONDS);
+                            log.info("Watch Dog Add Time Operation Over,Thread ID: {}", threadId);
+                        }
+                    },
+                    timeout - 2,
+                    timeout,
+                    TimeUnit.SECONDS
+            );
+
             //业务操作
             return doSeckill(productVo);
         } catch (InterruptedException e) {
@@ -148,6 +177,10 @@ public class SecKillServiceImpl implements SecKillService {
                     log.info("Release Redis Lock Success, Thread ID: {}", threadId);
                 }
             }
+
+            //销毁任务,注意这里销毁的是任务不是线程。销毁线程后,任务还在,因此还会产生任务对应的线程
+            log.info("Cancel Add Time Task");
+            future.cancel(true);
 
         }
         return null;
