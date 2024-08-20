@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.uts.business.service.product.ProductService;
@@ -82,8 +83,10 @@ public class SecKillServiceImpl implements SecKillService {
             throw new BusinessException(BusinessErrorCode.TIME_IS_NOT_IN_RANGE);
         }
 
-        //更新商品库存: 该方法加了锁，为了缩小锁的粒度
-        String orderId = this.updateStock(productVo, product.getTime());
+        //更新商品库存[悲观锁]: 该方法加了锁，为了缩小锁的粒度
+        //String orderId = this.updateStock(productVo, product.getTime());
+        //更新商品库存[乐观锁]: 该方法加了锁，为了缩小锁的粒度
+        String orderId = this.updateStock(productVo);
 
         return orderId;
     }
@@ -110,6 +113,7 @@ public class SecKillServiceImpl implements SecKillService {
      * TODO: 存在问题:一直未获取到锁的线程,也执行释放锁的操作,会把真正加锁的线程的锁给释放掉,导致超卖问题
      *  解决：Redis 的 Set 命令,所有线程 key 保持一致,value存线程ID,删除时删除自己线程加的锁
      */
+    @Transactional(rollbackFor = Exception.class)
     public String updateStock(ProductVo productVo, Integer time) throws BusinessException {
         String lockKey = CacheConstant.SECKILL_PRODUCT_TIME_CACHE_KEY + BusinessConstant.COLON + time + BusinessConstant.COLON + productVo.getSeckillId();
         //存在问题：一直未获取到锁的线程，也执行释放锁的操作，会把真正加锁的线程的锁给释放掉，导致超卖问题,这里加入ThreadId，实现线程只释放自己的锁
@@ -184,6 +188,32 @@ public class SecKillServiceImpl implements SecKillService {
 
         }
         return null;
+    }
+
+    /*
+      TODO: 乐观锁实现: sql语句扣库存时添加条件：WHERE STOCK > 0, 当扣除库存失败时，抛异常;
+            利用的是乐观锁的思想;
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public String updateStock(ProductVo productVo) throws BusinessException {
+        //TODO: 单个用户订单个数限制。可在缓存中添加用户下单标记，然后从缓存读取，判断是否重复下单，就不用加到锁里面了，减小锁粒度而提高并发性
+        List<OrderVo> orderVoList = orderService.selectByUserId(productVo.getUserId());
+        if(!CollectionUtils.isEmpty(orderVoList)) {
+            throw new BusinessException(BusinessErrorCode.PRODUCT_COUNT_NOT_PERMITTED);
+        }
+
+        //更新商品库存
+        int n = productService.updateStock(productVo.getSeckillId(), 1);
+        if(n <= 0) {
+            throw new BusinessException(BusinessErrorCode.PRODUCT_IS_SALE_OVER);
+        }
+
+        //生成订单信息，发送到订单服务
+        String orderId = String.valueOf(snowflakeUtils.nextId());
+        OrderVo orderVo = new OrderVo(null, orderId, productVo.getUserId(), productVo.getSeckillId(), OrderStatusEnum.WAIT_TO_PAY_STATUS.getStatus(), null, PlatformTypeEnum.WEB_CLIENT_TYPE.getId(), null, null, null);
+        int id = orderService.addOrder(orderVo);
+
+        return orderId;
     }
 
     /*
