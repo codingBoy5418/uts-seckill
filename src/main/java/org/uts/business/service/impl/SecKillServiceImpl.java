@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import static org.uts.global.constant.CacheConstant.*;
 
 /**
  * @Description 秒杀商品 服务实现类
@@ -84,9 +85,9 @@ public class SecKillServiceImpl implements SecKillService {
         }
 
         //更新商品库存[悲观锁]: 该方法加了锁，为了缩小锁的粒度
-        //String orderId = this.updateStock(productVo, product.getTime());
+        String orderId = this.updateStock(productVo, product.getTime());
         //更新商品库存[乐观锁]: 该方法加了锁，为了缩小锁的粒度
-        String orderId = this.updateStock(productVo);
+        //String orderId = this.updateStock(productVo);
 
         return orderId;
     }
@@ -115,6 +116,7 @@ public class SecKillServiceImpl implements SecKillService {
      */
     @Transactional(rollbackFor = Exception.class)
     public String updateStock(ProductVo productVo, Integer time) throws BusinessException {
+        productVo.setTime(time);
         String lockKey = CacheConstant.SECKILL_PRODUCT_TIME_CACHE_KEY + BusinessConstant.COLON + time + BusinessConstant.COLON + productVo.getSeckillId();
         //存在问题：一直未获取到锁的线程，也执行释放锁的操作，会把真正加锁的线程的锁给释放掉，导致超卖问题,这里加入ThreadId，实现线程只释放自己的锁
         String threadId = String.valueOf(snowflakeUtils.nextId());
@@ -227,11 +229,17 @@ public class SecKillServiceImpl implements SecKillService {
         }
 
         //需要再次查询库存信息，之前查询的库存信息不准确了
-        ProductVo product = productService.selectById(productVo.getSeckillId());
-        //如果库存不够，直接返回
-        if(product.getStock() <= 0){
+//        ProductVo product = productService.selectById(productVo.getSeckillId());
+//        //如果库存不够，直接返回
+//        if(product.getStock() <= 0){
+//            throw new BusinessException(BusinessErrorCode.PRODUCT_IS_SALE_OVER);
+//        }
+        //库存预减
+        Long remain = redisTemplate.opsForHash().increment(SECKILL_PRODUCT_STOCK_CACHE_KEY + productVo.getTime(), String.valueOf(productVo.getSeckillId()), -1);
+        if(remain < 0){
             throw new BusinessException(BusinessErrorCode.PRODUCT_IS_SALE_OVER);
         }
+
         //更新商品库存
         productService.updateStock(productVo.getSeckillId(), 1);
 

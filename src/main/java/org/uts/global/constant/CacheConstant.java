@@ -31,4 +31,9 @@ public class CacheConstant {
 
     //秒杀商品id+场次Redis锁KEY
     public static final String SECKILL_PRODUCT_TIME_CACHE_KEY = REDIS_LOCK_PREFIX + COLON + "SECKILL_PRODUCT_TIME_LOCK";
+
+    //秒杀商品库存缓存KEY
+    public static final String SECKILL_PRODUCT_STOCK_CACHE_KEY = REDIS_LOCK_PREFIX + COLON + "PRODUCT_STOCK" + COLON;
+
+
 }
