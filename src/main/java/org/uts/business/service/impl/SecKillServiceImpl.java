@@ -58,6 +58,9 @@ public class SecKillServiceImpl implements SecKillService {
 
     private static final Object SECKILL_LOCK = new Object();
 
+    //商品库存缓存: KEY -> 秒杀商品id; VALUE -> 商品是否卖完
+    public static final Map<Long, Boolean> SECKILL_PRODUCT_STOCK_CACHE = new HashMap<>();
+
     private SnowflakeUtils snowflakeUtils = new SnowflakeUtils(1, 1);
 
     @Autowired
@@ -71,6 +74,11 @@ public class SecKillServiceImpl implements SecKillService {
      */
     @Override
     public String secKill(ProductVo productVo) throws BusinessException {
+        //从秒杀商品库存缓存中，判断商品是否卖完
+        Boolean isSellOver = SECKILL_PRODUCT_STOCK_CACHE.get(productVo.getSeckillId());
+        if(isSellOver != null && isSellOver) {
+            throw new BusinessException(BusinessErrorCode.PRODUCT_IS_SALE_OVER);
+        }
 
         //商品不存在，直接返回
         ProductVo product = productService.selectById(productVo.getSeckillId());
@@ -86,8 +94,18 @@ public class SecKillServiceImpl implements SecKillService {
 
         //判断用户是否重复下单：Redis的PUTNX命令,后改成increment命令，这样可以控制数量
         long orderCount = redisTemplate.opsForHash().increment(CacheConstant.SECKILL_ORDER_EXIST_KEY + product.getTime(), String.valueOf(productVo.getUserId()), 1);
-        if(orderCount > 2){
+        if(orderCount > 1){
             throw new BusinessException(BusinessErrorCode.PRODUCT_COUNT_NOT_PERMITTED);
+        }
+
+        //判断库存是否充足（库存预减实现）
+        Long remain = redisTemplate.opsForHash().increment(SECKILL_PRODUCT_STOCK_CACHE_KEY + product.getTime(), String.valueOf(productVo.getSeckillId()), -1);
+        if(remain < 0){
+            //商品库存不够，将商品信息缓存到内存缓存中
+            SECKILL_PRODUCT_STOCK_CACHE.put(productVo.getSeckillId(), true);
+            //商品库存不够，删除用户重复下单标志
+            redisTemplate.opsForHash().delete(CacheConstant.SECKILL_ORDER_EXIST_KEY + product.getTime(), String.valueOf(productVo.getUserId()));
+            throw new BusinessException(BusinessErrorCode.PRODUCT_IS_SALE_OVER);
         }
 
         //更新商品库存[悲观锁]: 该方法加了锁，为了缩小锁的粒度
@@ -240,11 +258,7 @@ public class SecKillServiceImpl implements SecKillService {
 //        if(product.getStock() <= 0){
 //            throw new BusinessException(BusinessErrorCode.PRODUCT_IS_SALE_OVER);
 //        }
-        //库存预减
-        Long remain = redisTemplate.opsForHash().increment(SECKILL_PRODUCT_STOCK_CACHE_KEY + productVo.getTime(), String.valueOf(productVo.getSeckillId()), -1);
-        if(remain < 0){
-            throw new BusinessException(BusinessErrorCode.PRODUCT_IS_SALE_OVER);
-        }
+
 
         //更新商品库存
         productService.updateStock(productVo.getSeckillId(), 1);
