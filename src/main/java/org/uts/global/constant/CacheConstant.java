@@ -35,5 +35,7 @@ public class CacheConstant {
     //秒杀商品库存缓存KEY
     public static final String SECKILL_PRODUCT_STOCK_CACHE_KEY = REDIS_LOCK_PREFIX + COLON + "PRODUCT_STOCK" + COLON;
 
+    //用户是否重复下单缓存KEY
+    public static final String SECKILL_ORDER_EXIST_KEY = REDIS_LOCK_PREFIX + COLON + "ORDER_SUCCESS" + COLON;
 
 }

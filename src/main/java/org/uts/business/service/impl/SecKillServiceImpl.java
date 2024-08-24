@@ -84,6 +84,12 @@ public class SecKillServiceImpl implements SecKillService {
             throw new BusinessException(BusinessErrorCode.TIME_IS_NOT_IN_RANGE);
         }
 
+        //判断用户是否重复下单：Redis的PUTNX命令,后改成increment命令，这样可以控制数量
+        long orderCount = redisTemplate.opsForHash().increment(CacheConstant.SECKILL_ORDER_EXIST_KEY + product.getTime(), String.valueOf(productVo.getUserId()), 1);
+        if(orderCount > 2){
+            throw new BusinessException(BusinessErrorCode.PRODUCT_COUNT_NOT_PERMITTED);
+        }
+
         //更新商品库存[悲观锁]: 该方法加了锁，为了缩小锁的粒度
         String orderId = this.updateStock(productVo, product.getTime());
         //更新商品库存[乐观锁]: 该方法加了锁，为了缩小锁的粒度
@@ -136,7 +142,7 @@ public class SecKillServiceImpl implements SecKillService {
                 //加锁失败
                 if(!success) {
                     log.info("Add Redis Lock Failed, Thread ID: {}, Ready to Sleep and Retry ...", threadId);
-                    Thread.sleep(30);
+                    Thread.sleep(5);
                 }
                 //加锁成功, 跳出循环
                 else {
@@ -223,10 +229,10 @@ public class SecKillServiceImpl implements SecKillService {
      */
     public String doSeckill(ProductVo productVo) throws BusinessException{
         //TODO: 单个用户订单个数限制。可在缓存中添加用户下单标记，然后从缓存读取，判断是否重复下单，就不用加到锁里面了，减小锁粒度而提高并发性
-        List<OrderVo> orderVoList = orderService.selectByUserId(productVo.getUserId());
-        if(!CollectionUtils.isEmpty(orderVoList)) {
-            throw new BusinessException(BusinessErrorCode.PRODUCT_COUNT_NOT_PERMITTED);
-        }
+//        List<OrderVo> orderVoList = orderService.selectByUserId(productVo.getUserId());
+//        if(!CollectionUtils.isEmpty(orderVoList)) {
+//            throw new BusinessException(BusinessErrorCode.PRODUCT_COUNT_NOT_PERMITTED);
+//        }
 
         //需要再次查询库存信息，之前查询的库存信息不准确了
 //        ProductVo product = productService.selectById(productVo.getSeckillId());
