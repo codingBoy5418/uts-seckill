@@ -70,6 +70,11 @@ public class ProductVo implements Serializable {
     //用户ID
     private Long userId;
 
+    public ProductVo(Long userId, Long secKillId) {
+        this.userId = userId;
+        this.seckillId = secKillId;
+    }
+
     /*
       将 商品VO 转换为 商品DTO
      */

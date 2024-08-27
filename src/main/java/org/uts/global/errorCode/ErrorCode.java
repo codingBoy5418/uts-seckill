@@ -48,12 +48,8 @@ public enum ErrorCode {
     COMMON_ERROR_ARGUMENT_VALID("000011", "参数校验不通过"),
     COMMON_TYPE_MISS_MATCH("000012", "参数类型不匹配"),
     COMMON_TYPE_MISS_PARAMETER("000013", "参数缺失"),
+    ILLEGAL_OPERATION("000014", "非法操作"),
 
-    /* ********************************** 业务异常 ************************************/
-    //商品信息
-    BUSINESS_GOODS_NOT_EXITS("010001", "商品不存在"),
-
-    BUSINESS_GOODS_SALE_OVER("010002", "商品已卖完"),
 
     ;
 

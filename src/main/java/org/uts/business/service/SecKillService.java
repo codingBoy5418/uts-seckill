@@ -17,7 +17,7 @@ public interface SecKillService {
     /*
      * 秒杀接口
      */
-    public String secKill(ProductVo productVo) throws BusinessException;
+    public void secKill(ProductVo productVo) throws BusinessException;
 
     /*
      * 付款接口
@@ -30,4 +30,16 @@ public interface SecKillService {
     public String refund(String id);
 
 
+
+
+
+    /*
+     * 订单创建异常，回滚操作
+     */
+    public void failedRollback(ProductVo productVo, boolean isUpdateStock);
+
+    /*
+     * 订单创建异常，回滚操作
+     */
+    public void removeSoldOver(Long userId);
 }

@@ -11,6 +11,7 @@ import org.uts.business.domain.vo.ProductVo;
 import org.uts.business.service.SecKillService;
 import org.uts.business.service.product.ProductService;
 import org.uts.exception.BusinessException;
+import org.uts.global.constant.BusinessConstant;
 import org.uts.result.RestResult;
 import org.uts.service.order.OrderService;
 import org.uts.valid.Add;
@@ -59,8 +60,8 @@ public class SecKillController {
      */
     @PostMapping("/secKill")
     public RestResult secKill(@RequestBody @Validated(Add.class) ProductVo productVo) throws BusinessException {
-        String id = secKillProductService.secKill(productVo);
-        return RestResult.createSuccessfulRest(id);
+        secKillProductService.secKill(productVo);
+        return RestResult.createSuccessfulRest(BusinessConstant.SUCCESS);
     }
 
     /*

@@ -12,5 +12,8 @@ public class BusinessConstant {
     //冒号
     public static final String COLON = ":";
 
+    public static final String SUCCESS = "SUCCESS";
+
+
 
 }
