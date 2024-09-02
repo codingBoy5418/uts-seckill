@@ -5,16 +5,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.uts.business.domain.vo.BatchAddProductVo;
 import org.uts.business.domain.vo.SecKillProductPageVo;
 import org.uts.business.domain.vo.ProductVo;
-import org.uts.business.service.SecKillService;
+import org.uts.business.service.product.SecKillService;
 import org.uts.business.service.product.ProductService;
 import org.uts.exception.BusinessException;
 import org.uts.global.constant.BusinessConstant;
 import org.uts.result.RestResult;
 import org.uts.service.order.OrderService;
 import org.uts.valid.Add;
+import org.uts.vo.order.OrderVo;
+import org.uts.vo.order.RefundVo;
 
 import java.util.List;
 
@@ -68,18 +69,17 @@ public class SecKillController {
      * 付款接口
      */
     @PostMapping("/pay")
-    public RestResult pay(@RequestBody BatchAddProductVo batchAddProductVo){
-        String id = secKillProductService.pay(batchAddProductVo);
-        return RestResult.createSuccessfulRest(id);
+    public String pay(@RequestBody OrderVo orderVo) throws BusinessException {
+        String res = secKillProductService.pay(orderVo);
+        return res;
     }
 
     /*
      * 退款接口
      */
-    @GetMapping("/refund/{id}")
-    public RestResult refund(@PathVariable String id){
-        String res = secKillProductService.refund(id);
-        return RestResult.createSuccessfulRest(res);
+    @GetMapping("/refund")
+    public RestResult refund(@RequestBody RefundVo refundVo) throws BusinessException {
+        return RestResult.createSuccessfulRest(secKillProductService.refund(refundVo));
     }
 
 }

@@ -19,6 +19,11 @@ public enum BusinessErrorCode {
 
     PRODUCT_COUNT_NOT_PERMITTED("020004", "商品购买数量超出限制"),
 
+    //******************************* 商品业务 ******************************
+    ORDER_NOT_EXISTED("030001", "订单不存在"),
+
+    ORDER_PAY_NOT_PERMITTED("030002", "当前订单状态下不允许支付"),
+
     ;
 
 

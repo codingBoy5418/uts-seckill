@@ -9,13 +9,13 @@ import lombok.Data;
  * @Description: 返回体
  **/
 @Data
-public abstract class BaseResult {
+public abstract class BaseResult<T> {
     //错误码
     public String code;
     //错误信息
     public String errorMsg;
     //数据
-    public Object data;
+    public T data;
     //请求结果
     public boolean success;
 }

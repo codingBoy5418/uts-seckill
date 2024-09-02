@@ -11,6 +11,7 @@ import org.uts.global.constant.MessageType;
 import org.uts.mq.handler.OrderHandler;
 import org.uts.mq.message.AddOrderResultMessage;
 import org.uts.mq.message.MQMessage;
+import org.uts.mq.message.OrderDelayMessage;
 import org.uts.mq.message.RemoveSoldOutMessage;
 
 import java.util.Date;
@@ -48,6 +49,10 @@ public class MQReceiver {
         //处理删除订单售完标记消息
         if(MessageType.REMOVE_ORDER_SOLD_OUT_MESSAGE_TYPE.equals(mqMessage.getType())) {
             orderHandler.dealWithAddOrderResult(JSON.parseObject(mqMessage.getBody(), RemoveSoldOutMessage.class));
+        }
+        //处理订单超时消息
+        if(MessageType.ORDER_DELAY_MESSAGE_TYPE.equals(mqMessage.getType())) {
+            orderHandler.dealWithOrderDelayResult(JSON.parseObject(mqMessage.getBody(), OrderDelayMessage.class));
         }
     }
 }

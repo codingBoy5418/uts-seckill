@@ -1,12 +1,9 @@
-package org.uts.business.service;
+package org.uts.business.service.product;
 
-import org.uts.business.domain.dto.ProductDto;
-import org.uts.business.domain.vo.BatchAddProductVo;
-import org.uts.business.domain.vo.SecKillProductPageVo;
 import org.uts.business.domain.vo.ProductVo;
 import org.uts.exception.BusinessException;
-
-import java.util.List;
+import org.uts.vo.order.OrderVo;
+import org.uts.vo.order.RefundVo;
 
 /**
  * @Description 秒杀商品 服务类
@@ -22,12 +19,12 @@ public interface SecKillService {
     /*
      * 付款接口
      */
-    public String pay(BatchAddProductVo batchAddProductVo);
+    public String pay(OrderVo orderVo) throws BusinessException;
 
     /*
      * 退款接口
      */
-    public String refund(String id);
+    public boolean refund(RefundVo refundVo) throws BusinessException;
 
 
 

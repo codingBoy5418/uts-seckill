@@ -14,6 +14,9 @@ public enum OrderStatusEnum {
 
     REFUNDED_STATUS(3, "已退款"),
 
+    SYSTEM_CANCEL_STATUS(4, "自动取消"),
+
+    HAND_CANCEL_STATUS(5, "手动取消"),
     ;
 
 

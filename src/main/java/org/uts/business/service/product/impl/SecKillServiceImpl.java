@@ -1,38 +1,37 @@
-package org.uts.business.service.impl;
+package org.uts.business.service.product.impl;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.uts.business.service.product.ProductService;
 import org.uts.global.constant.*;
-import org.uts.business.domain.vo.BatchAddProductVo;
 import org.uts.business.domain.vo.ProductVo;
-import org.uts.business.service.SecKillService;
+import org.uts.business.service.product.SecKillService;
 import org.uts.exception.BusinessException;
 import org.uts.global.errorCode.BusinessErrorCode;
 import org.uts.mq.message.AddOrderMessage;
 import org.uts.mq.message.MQMessage;
 import org.uts.mq.message.RemoveSoldOutMessage;
 import org.uts.service.order.OrderService;
+import org.uts.service.order.PayService;
 import org.uts.utils.RedisLockUtils;
 import org.uts.utils.RedisUtils;
 import org.uts.utils.SnowflakeUtils;
 import org.uts.vo.order.OrderVo;
-
+import org.uts.vo.order.RefundVo;
+import org.uts.vo.pay.PayVo;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+
 import static org.uts.global.constant.CacheConstant.*;
 
 /**
@@ -52,6 +51,9 @@ public class SecKillServiceImpl implements SecKillService {
 
     @Reference
     private OrderService orderService;
+
+    @Reference
+    private PayService payService;
 
     @Autowired
     private RedisLockUtils redisLockUtils;
@@ -115,6 +117,8 @@ public class SecKillServiceImpl implements SecKillService {
         }
 
         //更新商品库存[悲观锁]: 该方法加了锁，为了缩小锁的粒度
+        productVo.setSeckillName(product.getSeckillName());
+        productVo.setPrice(product.getPrice());
         this.updateStock(productVo, product.getTime());
         //更新商品库存[乐观锁]: 该方法加了锁，为了缩小锁的粒度
         //String orderId = this.updateStock(productVo);
@@ -125,16 +129,45 @@ public class SecKillServiceImpl implements SecKillService {
      * 支付接口
      */
     @Override
-    public String pay(BatchAddProductVo batchAddProductVo) {
-        return null;
+    public String pay(OrderVo orderVo) throws BusinessException {
+        List<OrderVo> orderVoList = orderService.selectOrder(orderVo);
+        //订单不存在
+        if(CollectionUtils.isEmpty(orderVoList)) {
+            throw new BusinessException(BusinessErrorCode.ORDER_NOT_EXISTED);
+        }
+        //订单状态不为待支付
+        OrderVo orderVoFromDB = orderVoList.get(0);
+        if(!Objects.equals(OrderStatusEnum.WAIT_TO_PAY_STATUS.getStatus(), orderVoFromDB.getStatus())) {
+            throw new BusinessException(BusinessErrorCode.ORDER_PAY_NOT_PERMITTED);
+        }
+        //调用支付服务，发起支付请求
+        PayVo payVo = new PayVo(orderVoFromDB.getOrderId(), orderVoFromDB.getProductName(), orderVoFromDB.getPrice());
+        return payService.pay(payVo);
     }
 
     /*
      * 退款接口
      */
     @Override
-    public String refund(String id) {
-      return null;
+    public boolean refund(RefundVo refundVo) throws BusinessException {
+        //查询订单信息
+        OrderVo orderVo = new OrderVo();
+        orderVo.setOrderId(refundVo.getOrderId());
+        orderVo.setUserId(refundVo.getUserId());
+        OrderVo orderVoFromDb = orderService.selectOrder(orderVo).get(0);
+        //远程调用支付服务，进行退款操作
+        refundVo.setTradeNumber(orderVoFromDb.getTradeNumber());
+        refundVo.setMoney(orderVoFromDb.getPrice());
+        boolean res = payService.refund(refundVo);
+        //远程调用订单服务，进行退款操作：更新订单状态; 创建退款流水
+        if(res) {
+            orderService.refund(refundVo);
+            ProductVo productVo = new ProductVo();
+            productVo.setSeckillId(orderVoFromDb.getProductId());
+            productVo.setUserId(orderVoFromDb.getUserId());
+            failedRollback(productVo, true);
+        }
+        return res;
     }
 
 
@@ -247,7 +280,7 @@ public class SecKillServiceImpl implements SecKillService {
 
         //生成订单信息，发送到订单服务
         String orderId = String.valueOf(snowflakeUtils.nextId());
-        OrderVo orderVo = new OrderVo(null, orderId, productVo.getUserId(), productVo.getSeckillId(), OrderStatusEnum.WAIT_TO_PAY_STATUS.getStatus(), null, PlatformTypeEnum.WEB_CLIENT_TYPE.getId(), null, null, null);
+        OrderVo orderVo = new OrderVo(null, orderId, null, productVo.getUserId(), productVo.getSeckillId(), productVo.getSeckillName(), OrderStatusEnum.WAIT_TO_PAY_STATUS.getStatus(), null, PlatformTypeEnum.WEB_CLIENT_TYPE.getId(), productVo.getPrice(), null, null, null);
         int id = orderService.addOrder(orderVo);
 
         return orderId;
@@ -282,7 +315,7 @@ public class SecKillServiceImpl implements SecKillService {
 //        int id = orderService.addOrder(orderVo);
 
             //优化：为提高吞吐量，采用异步方式代替RPC远程调用新增订单：向MQ发送订单消息
-            AddOrderMessage addOrderMessage = new AddOrderMessage(productVo.getUserId(), productVo.getSeckillId(), PlatformTypeEnum.WEB_CLIENT_TYPE.getId());
+            AddOrderMessage addOrderMessage = new AddOrderMessage(productVo.getUserId(), productVo.getSeckillId(), productVo.getSeckillName(), productVo.getPrice(), PlatformTypeEnum.WEB_CLIENT_TYPE.getId());
             MQMessage mqMessage = new MQMessage(UUID.randomUUID().toString(), MessageCategory.BUSINESS_MESSAGE_TYPE, MessageType.ADD_ORDER_MESSAGE_TYPE, JSON.toJSONString(addOrderMessage));
             log.info("Send CREATE_ORDER_QUEUE Message To uts-order Service...");
             rabbitTemplate.convertAndSend(MqEnum.UTS_ORDER_QUEUE.getExchange(), MqEnum.UTS_ORDER_QUEUE.getRoutingKey(), JSON.toJSONString(mqMessage));

@@ -20,6 +20,12 @@ public class AddOrderMessage {
     //秒杀商品ID
     private Long seckillId;
 
+    //秒杀商品名称
+    private String productName;
+
+    //秒杀商品价格
+    private Float price;
+
     //下单平台
     private Integer platform;
 

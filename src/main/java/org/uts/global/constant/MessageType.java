@@ -16,4 +16,7 @@ public class MessageType {
     //删除内存缓存中的商品售完标记消息
     public static final String REMOVE_ORDER_SOLD_OUT_MESSAGE_TYPE = "removeOrderSoldOut";
 
+    //订单延时消息
+    public static final String ORDER_DELAY_MESSAGE_TYPE = "orderDelay";
+
 }

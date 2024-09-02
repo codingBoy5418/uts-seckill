@@ -17,6 +17,8 @@ public enum MqEnum {
     //秒杀队列
     UTS_SECKILL_QUEUE("BUSINESS_EXCHANGE", "UTS_SECKILL_QUEUE", "uts_seckill"),
 
+    //一般队列，用于接收延时消息
+    UTS_GENERAL_QUEUE("BUSINESS_EXCHANGE", "UTS_GENERAL_QUEUE", "uts_general"),
 
     ;
 

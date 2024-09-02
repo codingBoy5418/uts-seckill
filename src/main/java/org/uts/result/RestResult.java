@@ -6,11 +6,11 @@ package org.uts.result;
  * @Version 1.0
  * @Description: 返回体
  **/
-public class RestResult extends BaseResult {
+public class RestResult<T> extends BaseResult {
 
     public RestResult(){}
 
-    public RestResult(Object data, String code, String errorMsg, boolean success){
+    public RestResult(T data, String code, String errorMsg, boolean success){
         super.data = data;
         super.code = code;
         super.errorMsg = errorMsg;
@@ -22,7 +22,7 @@ public class RestResult extends BaseResult {
         super.errorMsg = errorMsg;
     }
 
-    public static RestResult createSuccessfulRest(Object data){
+    public static <T> RestResult<T> createSuccessfulRest(T data){
         return createSuccessfulRest(data, "0", "", true);
     }
 
@@ -34,7 +34,7 @@ public class RestResult extends BaseResult {
         return createSuccessfulRest(null, code, errorMsg, true);
     }
 
-    public static RestResult createSuccessfulRest(Object data, String code, String errorMsg, boolean success){
+    public static <T> RestResult<T> createSuccessfulRest(T data, String code, String errorMsg, boolean success){
         RestResult restResult = new RestResult();
         restResult.data = data;
         restResult.code = code;
@@ -47,7 +47,7 @@ public class RestResult extends BaseResult {
         return createFailedResult(null, code, errorMsg, false);
     }
 
-    public static RestResult createFailedResult(Object data, String code, String errorMsg, boolean success){
+    public static <T> RestResult<T> createFailedResult(T data, String code, String errorMsg, boolean success){
         RestResult restResult = new RestResult();
         restResult.data = data;
         restResult.code = code;
